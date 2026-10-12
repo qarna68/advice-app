@@ -2,1154 +2,362 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>مولد نصائح السوشيال ميديا</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مولد قصص السناب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@700&family=Tajawal:wght@700&family=Lalezar&family=Reem+Kufi:wght@700&family=Changa:wght@700&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tahoma', sans-serif; }
-  body {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    min-height: 100vh;
-    padding: 20px;
-    color: #fff;
-  }
-  .container {
-    max-width: 1100px;
-    margin: auto;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  }
-  h1 { text-align: center; margin-bottom: 20px; font-size: 28px; }
-  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
-
-  .controls { display: flex; flex-direction: column; gap: 12px; max-height: 85vh; overflow-y: auto; padding-left: 5px; }
-  .controls label { font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px; }
-  .controls input, .controls textarea, .controls select {
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.9);
-    color: #333;
-    font-size: 15px;
-    width: 100%;
-  }
-  .controls textarea { min-height: 90px; resize: vertical; }
-  .row { display: flex; gap: 10px; }
-  .row > * { flex: 1; }
-  .slider-group {
-    background: rgba(255,255,255,0.15);
-    padding: 12px;
-    border-radius: 10px;
-  }
-  .slider-group label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .slider-group input[type="range"] {
-    width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(255,255,255,0.3);
-    outline: none;
-    -webkit-appearance: none;
-  }
-  .slider-group input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
-  }
-  .btn {
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  .btn-download { background: #FF9800; color: #fff; width: 100%; margin-bottom: 8px; }
-  .btn-share { background: #4CAF50; color: #fff; width: 100%; }
-  .btn:hover { transform: translateY(-2px); opacity: 0.9; }
-
-  .preview {
-    background: rgba(0,0,0,0.3);
-    border-radius: 15px;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: sticky;
-    top: 20px;
-  }
-  canvas {
-    max-width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    cursor: grab;
-    touch-action: none;
-  }
-  canvas:active { cursor: grabbing; }
-  .hint { font-size: 12px; opacity: 0.8; text-align: center; margin-top: 8px; }
-  .section-title {
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 10px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid rgba(255,255,255,0.3);
-  }
-  .drag-hint {
-    background: rgba(255,255,0,0.2);
-    border: 1px solid rgba(255,255,0,0.5);
-    padding: 8px;
-    border-radius: 8px;
-    font-size: 13px;
-    text-align: center;
-    margin-top: 5px;
-  }
-  .checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255,255,255,0.15);
-    padding: 10px;
-    border-radius: 10px;
-  }
-  .checkbox-group input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-    cursor: pointer;
-  }
-  .checkbox-group label {
-    margin: 0;
-    cursor: pointer;
-    flex: 1;
-  }
-  .watermark-options {
-    background: rgba(255,255,255,0.1);
-    padding: 12px;
-    border-radius: 10px;
-    display: none;
-  }
-  .watermark-options.active { display: block; }
-
-  /* قوالب */
-  .templates-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 10px;
-  }
-  .template-card {
-    aspect-ratio: 1;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 3px solid transparent;
-    transition: 0.3s;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
-  .template-card:hover { transform: scale(1.05); }
-  .template-card.active {
-    border-color: #FFD700;
-    box-shadow: 0 0 20px rgba(255,215,0,0.8);
-  }
-  .template-card canvas {
-    width: 100%;
-    height: 100%;
-    border-radius: 7px;
-  }
-  .template-name {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.7);
-    color: #fff;
-    font-size: 10px;
-    padding: 3px;
-    text-align: center;
-  }
-
-  /* Modal */
-  .modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-  }
-  .modal.active { display: flex; }
-  .modal-content {
-    background: #fff;
-    border-radius: 15px;
-    padding: 20px;
-    max-width: 500px;
-    width: 100%;
-    text-align: center;
-    color: #333;
-  }
-  .modal-content img {
-    max-width: 100%;
-    border-radius: 10px;
-    margin: 15px 0;
-  }
-  .modal-content .btn {
-    margin: 5px;
-    width: auto;
-    display: inline-block;
-    padding: 10px 20px;
-  }
-  .modal-close { background: #f44336; color: #fff; }
-  .modal-instruction {
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin: 10px 0;
-    color: #856404;
-  }
-
-  /* Scrollbar */
-  .controls::-webkit-scrollbar { width: 6px; }
-  .controls::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 3px; }
-  .controls::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 3px; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Tajawal,Tahoma,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#fff;padding:16px}
+  .wrap{max-width:1100px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:18px;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:20px;padding:20px}
+  @media(max-width:800px){.wrap{grid-template-columns:1fr}}
+  .panel{display:flex;flex-direction:column;gap:10px;max-height:88vh;overflow-y:auto;padding-inline-end:6px}
+  h3{font-size:15px;border-bottom:2px solid rgba(255,255,255,.3);padding-bottom:4px;margin-top:8px}
+  label{font-size:13px;font-weight:700;display:block;margin-bottom:4px}
+  input,select,textarea{width:100%;padding:9px;border:none;border-radius:10px;background:rgba(255,255,255,.92);color:#333;font-size:15px;font-family:inherit}
+  input[type=range]{padding:0;height:6px;margin-top:6px}
+  input[type=color]{height:38px;padding:3px}
+  .row{display:flex;gap:10px}.row>div{flex:1}
+  .chk{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+  .chk input{width:20px;height:20px}
+  .btn{padding:12px;border:none;border-radius:10px;font:700 16px Tajawal,sans-serif;color:#fff;cursor:pointer;width:100%}
+  .btn-rs{background:rgba(255,255,255,.2)}
+  .btn-sh{background:#4CAF50}
+  .stage{display:flex;flex-direction:column;align-items:center;gap:8px}
+  #cv{height:82vh;width:auto;max-width:100%;aspect-ratio:9/16;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.45);touch-action:none;cursor:grab}
+  @media(max-width:800px){#cv{height:auto;width:100%}}
+  .hint{font-size:12px;opacity:.85;text-align:center}
+  .status{font-size:13px;color:#ffe082;min-height:18px;text-align:center}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>✨ مولد نصائح السوشيال ميديا</h1>
-  <div class="layout">
-    <div class="controls">
-      <label>1) اختر صورة من جهازك (اختياري):</label>
-      <input type="file" id="imgInput" accept="image/*">
+<div class="wrap">
+  <div class="panel">
+    <h3>📎 الوسائط</h3>
+    <label>اختر صورة أو فيديو (اختياري)</label>
+    <input type="file" id="file" accept="image/*,video/*">
 
-      <div class="section-title">🕌 القوالب الإسلامية الجاهزة</div>
-      <div class="templates-grid" id="templatesGrid"></div>
-      <p class="hint">💡 اختر قالباً أو ارفع صورتك الخاصة</p>
+    <h3>✍️ النص</h3>
+    <textarea data-k="text.v" rows="3" placeholder="اكتب نصيحتك هنا..."></textarea>
+    <div class="row">
+      <div><label>الخط</label><select class="fonts" data-k="text.font"></select></div>
+      <div><label>الحجم</label><input type="number" data-k="text.size" min="20" max="200"></div>
+    </div>
+    <div class="row">
+      <div><label>اللون</label><input type="color" data-k="text.color"></div>
+      <div><label>المحاذاة</label>
+        <select data-k="text.align">
+          <option value="right">يمين</option><option value="center">وسط</option><option value="left">يسار</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div><label>الخلفية</label>
+        <select data-k="text.style">
+          <option value="shadow">ظل</option><option value="box">مربع</option><option value="glow">توهج</option><option value="none">بدون</option>
+        </select>
+      </div>
+      <div><label>الشفافية</label><input type="range" min="0" max="1" step="0.05" data-k="text.op"></div>
+    </div>
+    <label>عرض النص</label>
+    <input type="range" min="300" max="1000" step="10" data-k="text.maxW">
 
-      <label>2) اكتب النصيحة:</label>
-      <textarea id="adviceText" placeholder="اكتب نصيحتك هنا..."></textarea>
-
-      <div class="section-title">🎨 إعدادات النص</div>
-      <div class="row">
-        <div>
-          <label>حجم الخط:</label>
-          <input type="number" id="fontSize" value="42" min="10" max="120">
-        </div>
-        <div>
-          <label>لون النص:</label>
-          <input type="color" id="textColor" value="#ffffff">
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>محاذاة النص:</label>
-          <select id="textAlign">
-            <option value="right">يمين</option>
-            <option value="center" selected>وسط</option>
-            <option value="left">يسار</option>
-          </select>
-        </div>
-        <div>
-          <label>نمط الخلفية:</label>
-          <select id="bgStyle">
-            <option value="shadow">ظل خلف النص</option>
-            <option value="box">مربع ملون</option>
-            <option value="none">بدون</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section-title">📅 التاريخ (أسفل الصورة)</div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="showDate" checked>
-        <label for="showDate">إظهار التاريخ الميلادي والهجري</label>
-      </div>
-      <div class="row">
-        <div>
-          <label>لون التاريخ:</label>
-          <input type="color" id="dateColor" value="#ffffff">
-        </div>
-        <div>
-          <label>حجم خط التاريخ:</label>
-          <input type="number" id="dateFontSize" value="28" min="14" max="50">
-        </div>
-      </div>
-
-      <div class="section-title">💧 العلامة المائية</div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="showWatermark">
-        <label for="showWatermark">إضافة علامة مائية</label>
-      </div>
-      <div class="watermark-options" id="watermarkOptions">
-        <div class="row">
-          <div>
-            <label>نص العلامة المائية:</label>
-            <input type="text" id="watermarkText" placeholder="مثال: @qarna68" value="@qarna68">
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px;">
-          <div>
-            <label>لون العلامة:</label>
-            <input type="color" id="watermarkColor" value="#ffffff">
-          </div>
-          <div>
-            <label>حجم الخط:</label>
-            <input type="number" id="watermarkSize" value="24" min="12" max="50">
-          </div>
-        </div>
-        <div style="margin-top:10px;">
-          <label>موضع العلامة:</label>
-          <select id="watermarkPos">
-            <option value="bottom-right">أسفل يمين</option>
-            <option value="bottom-left">أسفل يسار</option>
-            <option value="top-right">أعلى يمين</option>
-            <option value="top-left">أعلى يسار</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section-title">📍 تحريك النص</div>
-      <div class="drag-hint"> اسحب النص مباشرة على الصورة لتحريكه</div>
-      
-      <div class="slider-group">
-        <label><span>الموضع الأفقي (X)</span><span id="posXValue">540</span></label>
-        <input type="range" id="posX" min="0" max="1080" value="540">
-      </div>
-      <div class="slider-group">
-        <label><span>الموضع العمودي (Y)</span><span id="posYValue">450</span></label>
-        <input type="range" id="posY" min="0" max="1080" value="450">
-      </div>
-      <div class="slider-group">
-        <label><span>عرض النص</span><span id="maxWidthValue">900</span></label>
-        <input type="range" id="maxWidth" min="200" max="1000" value="900">
-      </div>
-
-      <button class="btn btn-download" onclick="downloadImage()">⬇️ تحميل الصورة</button>
-      <button class="btn btn-share" onclick="shareImage()">📤 مشاركة / حفظ في الاستوديو</button>
-      <p class="hint">💡 زر "مشاركة" يحفظ مباشرة في استوديو الآيفون</p>
+    <h3>📅 التاريخ</h3>
+    <label class="chk"><input type="checkbox" data-k="date.show"> إظهار التاريخ الميلادي والهجري</label>
+    <div class="row">
+      <div><label>الخط</label><select class="fonts" data-k="date.font"></select></div>
+      <div><label>الحجم</label><input type="number" data-k="date.size" min="14" max="120"></div>
+    </div>
+    <div class="row">
+      <div><label>اللون</label><input type="color" data-k="date.color"></div>
+      <div><label>الشفافية</label><input type="range" min="0" max="1" step="0.05" data-k="date.op"></div>
     </div>
 
-    <div class="preview">
-      <canvas id="canvas" width="1080" height="1080"></canvas>
-      <p class="hint">معاينة مباشرة (1080×1080)</p>
+    <h3>💧 التوقيع</h3>
+    <label class="chk"><input type="checkbox" data-k="sig.show"> إظهار التوقيع</label>
+    <input type="text" data-k="sig.v" placeholder="مثال: @username">
+    <div class="row">
+      <div><label>الخط</label><select class="fonts" data-k="sig.font"></select></div>
+      <div><label>الحجم</label><input type="number" data-k="sig.size" min="14" max="120"></div>
     </div>
+    <div class="row">
+      <div><label>اللون</label><input type="color" data-k="sig.color"></div>
+      <div><label>الشفافية</label><input type="range" min="0" max="1" step="0.05" data-k="sig.op"></div>
+    </div>
+
+    <h3>🎬 التأثيرات</h3>
+    <label>فلتر الخلفية</label>
+    <select data-k="S.effect">
+      <option value="none">بدون</option>
+      <option value="blur">ضبابية</option>
+      <option value="gray">أبيض وأسود</option>
+      <option value="sepia">ريترو</option>
+      <option value="warm">دافئ</option>
+      <option value="vignette">إطار داكن</option>
+    </select>
+    <label>تعتيم الخلفية</label>
+    <input type="range" min="0" max="0.8" step="0.05" data-k="S.dark">
+    <button class="btn btn-rs" id="reset">↺ إعادة المواضع الافتراضية</button>
+
+    <h3>📤 التصدير</h3>
+    <button class="btn btn-sh" id="exp">📤 مشاركة / حفظ</button>
+    <div class="status" id="status"></div>
+    <p class="hint">اسحب النص أو التاريخ أو التوقيع مباشرة على المعاينة</p>
   </div>
-</div>
 
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <h3>📱 حفظ الصورة على الآيفون</h3>
-    <img id="modalImg" src="" alt="preview">
-    <div class="modal-instruction">
-      <strong>طريقة الحفظ:</strong><br>
-      اضغط مطولاً على الصورة → اختر "حفظ في الصور"
-    </div>
-    <button class="btn" onclick="openInNewTab()"> فتح في نافذة جديدة</button>
-    <button class="btn modal-close" onclick="closeModal()">إغلاق</button>
+  <div class="stage">
+    <canvas id="cv" width="1080" height="1920"></canvas>
+    <p class="hint">معاينة 1080×1920 (ستوري)</p>
   </div>
 </div>
 
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let userImage = null;
-let isDragging = false;
-let dragStartX = 0, dragStartY = 0;
-let selectedTemplate = null;
+const W = 1080, H = 1920;
+const FONTS = ['Amiri','Cairo','Tajawal','Lalezar','Reem Kufi','Changa','Aref Ruqaa'];
+const FILT = { blur:'blur(14px)', gray:'grayscale(1)', sepia:'sepia(.9) contrast(1.05)', warm:'saturate(1.35) sepia(.25)' };
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
 
-// ====== القوالب الإسلامية ======
-const templates = [
-  { id: 'royal', name: 'الذهبي الملكي', draw: drawRoyalTemplate },
-  { id: 'emerald', name: 'الزمردي', draw: drawEmeraldTemplate },
-  { id: 'night', name: 'الليلي', draw: drawNightTemplate },
-  { id: 'moroccan', name: 'المغربي', draw: drawMoroccanTemplate },
-  { id: 'andalusi', name: 'الأندلسي', draw: drawAndalusiTemplate },
-  { id: 'ottoman', name: 'العثماني', draw: drawOttomanTemplate }
-];
+const S = {
+  effect:'none', dark:0, media:null, mtype:null, drag:null,
+  text:{ v:'', font:'Amiri', size:80, color:'#ffffff', align:'center', style:'shadow', maxW:880, x:540, y:960, op:1 },
+  date:{ show:true, font:'Cairo', size:42, color:'#ffffff', align:'center', style:'shadow', x:540, y:1640, op:.9 },
+  sig:{ show:true, v:'@qarna68', font:'Cairo', size:40, color:'#ffffff', align:'center', style:'shadow', x:540, y:1740, op:.85 }
+};
+const DEF = { text:{x:540,y:960}, date:{x:540,y:1640}, sig:{x:540,y:1740} };
 
-// رسم نجمة ثمانية
-function drawEightPointStar(cx, cy, outerR, innerR, color, shadow=true) {
-  ctx.save();
-  if (shadow) {
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 15;
-    ctx.shadowOffsetY = 5;
-  }
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  for (let i = 0; i < 8; i++) {
-    const angle = (i * Math.PI) / 4 - Math.PI / 2;
-    const x = cx + Math.cos(angle) * outerR;
-    const y = cy + Math.sin(angle) * outerR;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-    const innerAngle = angle + Math.PI / 8;
-    const ix = cx + Math.cos(innerAngle) * innerR;
-    const iy = cy + Math.sin(innerAngle) * innerR;
-    ctx.lineTo(ix, iy);
-  }
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
+const fontStr = (f, s) => `700 ${s}px "${f}", Tahoma, sans-serif`;
+let B = {}, pend = false, looping = false, exporting = false;
 
-// رسم زخرفة أرابيسك (دوائر متداخلة)
-function drawArabesque(cx, cy, radius, color, alpha=0.3) {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 6; i++) {
-    const angle = (i * Math.PI) / 3;
-    const x = cx + Math.cos(angle) * radius * 0.5;
-    const y = cy + Math.sin(angle) * radius * 0.5;
-    ctx.beginPath();
-    ctx.arc(x, y, radius * 0.6, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius * 0.3, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
-
-// رسم هلال
-function drawCrescent(cx, cy, radius, color) {
-  ctx.save();
-  ctx.fillStyle = color;
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 5;
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.beginPath();
-  ctx.arc(cx + radius * 0.35, cy - radius * 0.1, radius * 0.85, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.restore();
-}
-
-// رسم قبة
-function drawDome(cx, cy, width, height, color1, color2) {
-  ctx.save();
-  const grad = ctx.createLinearGradient(cx, cy - height, cx, cy);
-  grad.addColorStop(0, color1);
-  grad.addColorStop(1, color2);
-  ctx.fillStyle = grad;
-  ctx.shadowColor = 'rgba(0,0,0,0.4)';
-  ctx.shadowBlur = 15;
-  ctx.beginPath();
-  ctx.moveTo(cx - width/2, cy);
-  ctx.quadraticCurveTo(cx - width/2, cy - height, cx, cy - height);
-  ctx.quadraticCurveTo(cx + width/2, cy - height, cx + width/2, cy);
-  ctx.closePath();
-  ctx.fill();
-  // هلال على القبة
-  ctx.fillStyle = '#FFD700';
-  ctx.beginPath();
-  ctx.arc(cx, cy - height - 15, 12, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-// رسم عقد حدوة فرس (أندلسي)
-function drawHorseshoeArch(cx, cy, width, height, color1, color2) {
-  ctx.save();
-  const grad = ctx.createLinearGradient(cx, cy - height, cx, cy);
-  grad.addColorStop(0, color1);
-  grad.addColorStop(1, color2);
-  ctx.fillStyle = grad;
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 20;
-  ctx.beginPath();
-  ctx.moveTo(cx - width/2, cy);
-  ctx.lineTo(cx - width/2, cy - height * 0.4);
-  ctx.bezierCurveTo(cx - width/2, cy - height, cx - width*0.1, cy - height, cx, cy - height * 0.7);
-  ctx.bezierCurveTo(cx + width*0.1, cy - height, cx + width/2, cy - height, cx + width/2, cy - height * 0.4);
-  ctx.lineTo(cx + width/2, cy);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
-
-// ====== القوالب الستة ======
-
-function drawRoyalTemplate() {
-  // خلفية داكنة
-  const bg = ctx.createRadialGradient(540, 540, 100, 540, 540, 900);
-  bg.addColorStop(0, '#2C1810');
-  bg.addColorStop(1, '#0a0505');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1080, 1080);
-  
-  // إطار ذهبي ثلاثي الأبعاد
-  ctx.save();
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 8;
-  ctx.shadowColor = '#FFD700';
-  ctx.shadowBlur = 20;
-  ctx.strokeRect(40, 40, 1000, 1000);
-  ctx.strokeStyle = '#B8860B';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(55, 55, 970, 970);
-  ctx.restore();
-  
-  // زخارف الزوايا (نجوم ثمانية)
-  const corners = [[90,90],[990,90],[90,990],[990,990]];
-  corners.forEach(([x,y]) => drawEightPointStar(x, y, 60, 30, '#FFD700'));
-  
-  // نجمة مركزية كبيرة
-  drawEightPointStar(540, 180, 80, 40, '#FFD700');
-  drawEightPointStar(540, 900, 80, 40, '#FFD700');
-  
-  // زخارف أرابيسك جانبية
-  drawArabesque(150, 540, 150, '#D4AF37', 0.2);
-  drawArabesque(930, 540, 150, '#D4AF37', 0.2);
-  
-  // نقاط ذهبية زخرفية
-  ctx.fillStyle = '#FFD700';
-  for (let i = 0; i < 20; i++) {
-    const x = 100 + (i * 45);
-    ctx.beginPath();
-    ctx.arc(x, 130, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x, 950, 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawEmeraldTemplate() {
-  const bg = ctx.createRadialGradient(540, 540, 100, 540, 540, 900);
-  bg.addColorStop(0, '#0d5c3b');
-  bg.addColorStop(1, '#052818');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1080, 1080);
-  
-  // نمط هندسي متكرر (فسيفساء)
-  ctx.save();
-  ctx.globalAlpha = 0.15;
-  ctx.strokeStyle = '#00FF88';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < 1080; x += 60) {
-    for (let y = 0; y < 1080; y += 60) {
-      ctx.beginPath();
-      ctx.arc(x, y, 25, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(x + 30, y + 30, 25, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  }
-  ctx.restore();
-  
-  // إطار زمردي
-  ctx.save();
-  const frameGrad = ctx.createLinearGradient(0, 0, 1080, 1080);
-  frameGrad.addColorStop(0, '#00FF88');
-  frameGrad.addColorStop(0.5, '#50C878');
-  frameGrad.addColorStop(1, '#00FF88');
-  ctx.strokeStyle = frameGrad;
-  ctx.lineWidth = 10;
-  ctx.shadowColor = '#00FF88';
-  ctx.shadowBlur = 25;
-  ctx.strokeRect(50, 50, 980, 980);
-  ctx.restore();
-  
-  // زخرفة مركزية
-  drawArabesque(540, 540, 400, '#00FF88', 0.2);
-  drawEightPointStar(540, 150, 70, 35, '#50C878');
-  drawEightPointStar(540, 930, 70, 35, '#50C878');
-}
-
-function drawNightTemplate() {
-  const bg = ctx.createLinearGradient(0, 0, 0, 1080);
-  bg.addColorStop(0, '#0a0e27');
-  bg.addColorStop(0.5, '#1a1f4e');
-  bg.addColorStop(1, '#0a0e27');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1080, 1080);
-  
-  // نجوم
-  ctx.fillStyle = '#fff';
-  for (let i = 0; i < 80; i++) {
-    const x = Math.random() * 1080;
-    const y = Math.random() * 800;
-    const r = Math.random() * 2;
-    ctx.globalAlpha = Math.random() * 0.8 + 0.2;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-  
-  // هلال كبير
-  drawCrescent(850, 200, 80, '#FFD700');
-  
-  // قمر صغير
-  drawCrescent(200, 300, 40, '#FFFACD');
-  
-  // إطار فضي
-  ctx.save();
-  ctx.strokeStyle = '#C0C0C0';
-  ctx.lineWidth = 6;
-  ctx.shadowColor = '#C0C0C0';
-  ctx.shadowBlur = 15;
-  ctx.strokeRect(45, 45, 990, 990);
-  ctx.restore();
-  
-  // زخارف
-  drawArabesque(540, 900, 200, '#C0C0C0', 0.3);
-}
-
-function drawMoroccanTemplate() {
-  const bg = ctx.createRadialGradient(540, 540, 100, 540, 540, 900);
-  bg.addColorStop(0, '#c44536');
-  bg.addColorStop(1, '#6b1f15');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1080, 1080);
-  
-  // نمط فسيفساء مغربي (زليج)
-  ctx.save();
-  ctx.globalAlpha = 0.2;
-  const colors = ['#FFD700', '#00A86B', '#1E90FF', '#FFF'];
-  for (let x = 0; x < 1080; x += 80) {
-    for (let y = 0; y < 1080; y += 80) {
-      const color = colors[(Math.floor(x/80) + Math.floor(y/80)) % 4];
-      ctx.fillStyle = color;
-      // نجمة صغيرة
-      drawEightPointStar(x + 40, y + 40, 30, 15, color, false);
-    }
-  }
-  ctx.restore();
-  
-  // إطار مزخرف
-  ctx.save();
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 12;
-  ctx.shadowColor = '#FFD700';
-  ctx.shadowBlur = 20;
-  ctx.strokeRect(40, 40, 1000, 1000);
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(55, 55, 970, 970);
-  ctx.restore();
-  
-  // زخارف الزوايا
-  const corners = [[90,90],[990,90],[90,990],[990,990]];
-  corners.forEach(([x,y]) => drawEightPointStar(x, y, 70, 35, '#FFD700'));
-}
-
-function drawAndalusiTemplate() {
-  const bg = ctx.createLinearGradient(0, 0, 0, 1080);
-  bg.addColorStop(0, '#f4e4c1');
-  bg.addColorStop(0.5, '#e8d5a8');
-  bg.addColorStop(1, '#c9a96e');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1080, 1080);
-  
-  // عقد حدوة فرس في الأعلى
-  drawHorseshoeArch(540, 280, 500, 200, '#8B4513', '#D2691E');
-  // عقد في الأسفل (مقلوب)
-  ctx.save();
-  ctx.translate(540, 800);
-  ctx.scale(1, -1);
-  drawHorseshoeArch(0, 0, 500, 200, '#8B4513', '#D2691E');
-  ctx.restore();
-  
-  // أعمدة
-  ctx.save();
-  ctx.fillStyle = '#8B4513';
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 10;
-  ctx.fillRect(180, 280, 30, 520);
-  ctx.fillRect(870, 280, 30, 520);
-  // تيجان الأعمدة
-  ctx.fillStyle = '#D2691E';
-  ctx.fillRect(170, 270, 50, 30);
-  ctx.fillRect(860, 270, 50, 30);
-  ctx.fillRect(170, 780, 50, 30);
-  ctx.fillRect(860, 780, 50, 30);
-  ctx.restore();
-  
-  // زخارف
-  drawArabesque(540, 540, 250, '#8B4513', 0.25);
-  
-  // إطار
-  ctx.save();
-  ctx.strokeStyle = '#8B4513';
-  ctx.lineWidth = 8;
-  ctx.shadowColor = '#8B4513';
-  ctx.shadowBlur = 15;
-  ctx.strokeRect(50, 50, 980, 980);
-  ctx.restore();
-}
-
-function drawOttomanTemplate() {
-  const bg = ctx.createRadialGradient(540, 540, 100, 540, 540, 900);
-  bg.addColorStop(0, '#1a3a5c');
-  bg.addColorStop(1, '#0a1f35');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1080, 1080);
-  
-  // قبة كبيرة في الخلفية
-  drawDome(540, 700, 600, 400, '#2c5282', '#1a3a5c');
-  
-  // مئذنتان
-  ctx.save();
-  ctx.fillStyle = '#1a3a5c';
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 15;
-  ctx.fillRect(150, 300, 40, 500);
-  ctx.fillRect(890, 300, 40, 500);
-  // قمم المآذن
-  ctx.fillStyle = '#FFD700';
-  ctx.beginPath();
-  ctx.moveTo(150, 300);
-  ctx.lineTo(170, 220);
-  ctx.lineTo(190, 300);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(890, 300);
-  ctx.lineTo(910, 220);
-  ctx.lineTo(930, 300);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-  
-  // قبة ذهبية صغيرة
-  drawDome(540, 500, 200, 120, '#FFD700', '#B8860B');
-  
-  // هلال على القبة
-  drawCrescent(540, 360, 25, '#FFD700');
-  
-  // إطار
-  ctx.save();
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 8;
-  ctx.shadowColor = '#FFD700';
-  ctx.shadowBlur = 20;
-  ctx.strokeRect(45, 45, 990, 990);
-  ctx.restore();
-  
-  // زخارف
-  drawArabesque(200, 850, 120, '#FFD700', 0.3);
-  drawArabesque(880, 850, 120, '#FFD700', 0.3);
-}
-
-// ====== بناء شبكة القوالب ======
-function buildTemplatesGrid() {
-  const grid = document.getElementById('templatesGrid');
-  templates.forEach((t, idx) => {
-    const card = document.createElement('div');
-    card.className = 'template-card';
-    card.onclick = () => selectTemplate(idx);
-    
-    const miniCanvas = document.createElement('canvas');
-    miniCanvas.width = 200;
-    miniCanvas.height = 200;
-    const miniCtx = miniCanvas.getContext('2d');
-    
-    // رسم مصغر
-    const origCtx = ctx;
-    // نستخدم canvas الرئيسي مؤقتاً
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = 1080;
-    tempCanvas.height = 1080;
-    const tempCtx = tempCanvas.getContext('2d');
-    // استبدال ctx مؤقتاً
-    const originalCtx = ctx;
-    // لا نستطيع استبدال const، لذا نرسم مباشرة
-    // سنرسم في miniCanvas مباشرة
-    const mCtx = miniCtx;
-    // نعيد تعريف draw functions لتستخدم mCtx - معقد
-    // الحل: نرسم في canvas الرئيسي ثم ننسخ
-    
-    card.appendChild(miniCanvas);
-    
-    const name = document.createElement('div');
-    name.className = 'template-name';
-    name.textContent = t.name;
-    card.appendChild(name);
-    
-    grid.appendChild(card);
-  });
-  
-  // رسم القوالب المصغرة بعد إضافتها
-  setTimeout(() => {
-    const cards = document.querySelectorAll('.template-card');
-    cards.forEach((card, idx) => {
-      const miniCanvas = card.querySelector('canvas');
-      const mCtx = miniCanvas.getContext('2d');
-      // حفظ ctx الأصلي
-      const savedCtx = window.ctx;
-      window.ctx = mCtx;
-      // تغيير الإحداثيات
-      mCtx.save();
-      mCtx.scale(200/1080, 200/1080);
-      templates[idx].draw();
-      mCtx.restore();
-      window.ctx = savedCtx;
+function wrap(text, f, s, maxW) {
+  ctx.font = fontStr(f, s);
+  const out = [];
+  text.split('\n').forEach(p => {
+    let line = '';
+    p.split(' ').forEach(w => {
+      const t = line ? line + ' ' + w : w;
+      if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w; }
+      else line = t;
     });
-  }, 100);
-}
-
-function selectTemplate(idx) {
-  selectedTemplate = idx;
-  userImage = null;
-  document.getElementById('imgInput').value = '';
-  document.querySelectorAll('.template-card').forEach((c, i) => {
-    c.classList.toggle('active', i === idx);
+    out.push(line);
   });
-  render();
+  return out;
 }
 
-// ====== التاريخ ======
-function getDates() {
-  const now = new Date();
-  const gregorian = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  }).format(now);
-  const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  }).format(now);
-  return { gregorian: gregorian + ' م', hijri: hijri + 'هـ' };
+function measure(lines, f, s) {
+  ctx.font = fontStr(f, s);
+  const w = Math.max(0, ...lines.map(l => ctx.measureText(l).width));
+  return { w, h: lines.length * s * 1.45, lh: s * 1.45 };
 }
 
-// ====== الرسم الرئيسي ======
-function render() {
-  ctx.clearRect(0, 0, 1080, 1080);
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+}
 
-  // الخلفية: قالب أو صورة أو افتراضي
-  if (selectedTemplate !== null) {
-    templates[selectedTemplate].draw();
-  } else if (userImage) {
-    const r = Math.max(1080 / userImage.width, 1080 / userImage.height);
-    const w = userImage.width * r;
-    const h = userImage.height * r;
-    ctx.drawImage(userImage, (1080 - w) / 2, (1080 - h) / 2, w, h);
+function paint(el, lines) {
+  const m = measure(lines, el.font, el.size), P = 28;
+  const L = el.x - m.w / 2 - P, T = el.y - m.h / 2 - P * .6, bw = m.w + P * 2, bh = m.h + P * 1.2;
+  ctx.save();
+  ctx.globalAlpha = el.op;
+  ctx.font = fontStr(el.font, el.size);
+  ctx.fillStyle = el.color;
+  ctx.textAlign = el.align;
+  ctx.textBaseline = 'middle';
+  if (el.style === 'box') { ctx.fillStyle = 'rgba(0,0,0,.55)'; rr(L, T, bw, bh, 22); ctx.fill(); ctx.fillStyle = el.color; }
+  if (el.style === 'shadow') { ctx.shadowColor = 'rgba(0,0,0,.9)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 4; }
+  if (el.style === 'glow') { ctx.shadowColor = el.color; ctx.shadowBlur = 36; }
+  const x = el.align === 'right' ? el.x + m.w / 2 : el.align === 'left' ? el.x - m.w / 2 : el.x;
+  lines.forEach((ln, i) => ctx.fillText(ln, x, el.y - m.h / 2 + m.lh * (i + .5)));
+  ctx.restore();
+  return { x: L, y: T, w: bw, h: bh };
+}
+
+function dateLines() {
+  const n = new Date();
+  const g = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', { weekday:'long', day:'numeric', month:'long', year:'numeric' }).format(n);
+  const h = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { day:'numeric', month:'long', year:'numeric' }).format(n);
+  return [g + ' م', h + ' هـ'];
+}
+
+function drawBg() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#667eea'); g.addColorStop(1, '#764ba2');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const m = S.media;
+  const ready = m && (S.mtype === 'image' || m.readyState >= 2);
+  if (ready) {
+    const sw = m.videoWidth || m.naturalWidth, sh = m.videoHeight || m.naturalHeight;
+    const r = Math.max(W / sw, H / sh), dw = sw * r, dh = sh * r;
+    ctx.filter = FILT[S.effect] || 'none';
+    ctx.drawImage(m, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    ctx.filter = 'none';
+  }
+  if (S.dark > 0) { ctx.fillStyle = `rgba(0,0,0,${S.dark})`; ctx.fillRect(0, 0, W, H); }
+  if (S.effect === 'vignette') {
+    const v = ctx.createRadialGradient(W/2, H/2, H*.25, W/2, H/2, H*.75);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.8)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  }
+}
+
+function draw() {
+  drawBg();
+  B = {};
+  if (S.text.v.trim()) B.text = paint(S.text, wrap(S.text.v, S.text.font, S.text.size, S.text.maxW));
+  if (S.date.show) B.date = paint(S.date, dateLines());
+  if (S.sig.show && S.sig.v.trim()) B.sig = paint(S.sig, [S.sig.v]);
+  if (S.drag && B[S.drag.n]) {
+    const b = B[S.drag.n];
+    ctx.save(); ctx.setLineDash([14, 8]); ctx.lineWidth = 4; ctx.strokeStyle = '#FFD700';
+    ctx.strokeRect(b.x, b.y, b.w, b.h); ctx.restore();
+  }
+}
+
+function schedule() {
+  if (pend) return;
+  pend = true;
+  requestAnimationFrame(() => { pend = false; draw(); });
+}
+
+function loop() {
+  draw();
+  if (S.mtype === 'video') requestAnimationFrame(loop); else looping = false;
+}
+function startLoop() { if (!looping) { looping = true; loop(); } }
+
+function loadFont(f) { return document.fonts.load(fontStr(f, 40)).then(schedule).catch(() => {}); }
+
+// ===== الوسائط =====
+$('file').onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const url = URL.createObjectURL(f);
+  if (S.mtype === 'video' && S.media) { S.media.pause(); S.media.removeAttribute('src'); S.media.load(); }
+  if (f.type.startsWith('video')) {
+    const v = document.createElement('video');
+    v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+    v.onloadeddata = () => { S.media = v; S.mtype = 'video'; v.play().catch(() => {}); startLoop(); };
+    v.src = url; v.load();
   } else {
-    const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
-    grad.addColorStop(0, '#667eea');
-    grad.addColorStop(1, '#764ba2');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1080, 1080);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 40px Tahoma';
-    ctx.textAlign = 'center';
-    ctx.fillText('👈 ارفع صورة أو اختر قالباً', 540, 540);
-  }
-
-  const text = document.getElementById('adviceText').value.trim();
-  if (text) {
-    const fontSize = parseInt(document.getElementById('fontSize').value);
-    const color = document.getElementById('textColor').value;
-    const align = document.getElementById('textAlign').value;
-    const bg = document.getElementById('bgStyle').value;
-    const posX = parseInt(document.getElementById('posX').value);
-    const posY = parseInt(document.getElementById('posY').value);
-    const maxWidth = parseInt(document.getElementById('maxWidth').value);
-
-    ctx.font = `bold ${fontSize}px Tahoma, Arial`;
-    ctx.textAlign = align;
-    ctx.direction = 'rtl';
-
-    const lines = wrapText(text, maxWidth);
-    const lineHeight = fontSize * 1.4;
-    const totalHeight = lines.length * lineHeight;
-
-    const padding = 30;
-    let maxLineWidth = 0;
-    lines.forEach(l => {
-      const w = ctx.measureText(l).width;
-      if (w > maxLineWidth) maxLineWidth = w;
-    });
-
-    let boxX;
-    if (align === 'center') boxX = posX - maxLineWidth / 2 - padding;
-    else if (align === 'right') boxX = posX - maxLineWidth - padding;
-    else boxX = posX - padding;
-    const boxY = posY - totalHeight / 2 - padding / 2;
-    const boxW = maxLineWidth + padding * 2;
-    const boxH = totalHeight + padding;
-
-    if (bg === 'box') {
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(boxX, boxY, boxW, boxH);
-    }
-
-    ctx.fillStyle = color;
-    if (bg === 'shadow') {
-      ctx.shadowColor = 'rgba(0,0,0,0.95)';
-      ctx.shadowBlur = 20;
-      ctx.shadowOffsetX = 3;
-      ctx.shadowOffsetY = 3;
-    }
-
-    const startY = posY - totalHeight / 2 + lineHeight;
-    lines.forEach((line, i) => {
-      ctx.fillText(line, posX, startY + i * lineHeight);
-    });
-    ctx.shadowColor = 'transparent';
-
-    if (isDragging) {
-      ctx.strokeStyle = 'rgba(255,255,0,0.9)';
-      ctx.lineWidth = 4;
-      ctx.setLineDash([12, 6]);
-      ctx.strokeRect(boxX, boxY, boxW, boxH);
-      ctx.setLineDash([]);
-    }
-  }
-
-  drawDateBar();
-  drawWatermark();
-}
-
-function wrapText(text, maxWidth) {
-  const words = text.split(' ');
-  const lines = [];
-  let line = '';
-  for (const w of words) {
-    const test = line ? line + ' ' + w : w;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      lines.push(line);
-      line = w;
-    } else {
-      line = test;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
-function drawDateBar() {
-  if (!document.getElementById('showDate').checked) return;
-  const dates = getDates();
-  const fontSize = parseInt(document.getElementById('dateFontSize').value);
-  const color = document.getElementById('dateColor').value;
-  
-  const barHeight = fontSize * 3.5;
-  const gradient = ctx.createLinearGradient(0, 1080 - barHeight, 0, 1080);
-  gradient.addColorStop(0, 'rgba(0,0,0,0)');
-  gradient.addColorStop(0.3, 'rgba(0,0,0,0.7)');
-  gradient.addColorStop(1, 'rgba(0,0,0,0.9)');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 1080 - barHeight, 1080, barHeight);
-  
-  ctx.strokeStyle = 'rgba(255,215,0,0.5)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(100, 1080 - barHeight + 20);
-  ctx.lineTo(980, 1080 - barHeight + 20);
-  ctx.stroke();
-  
-  ctx.fillStyle = color;
-  ctx.textAlign = 'center';
-  ctx.direction = 'rtl';
-  ctx.font = `bold ${fontSize}px Tahoma, Arial`;
-  ctx.shadowColor = 'rgba(0,0,0,0.8)';
-  ctx.shadowBlur = 8;
-  
-  const y1 = 1080 - barHeight + 60;
-  const y2 = 1080 - barHeight + 60 + fontSize * 1.5;
-  ctx.fillText(dates.gregorian, 540, y1);
-  ctx.font = `${fontSize - 4}px Tahoma, Arial`;
-  ctx.fillText(dates.hijri, 540, y2);
-  ctx.shadowColor = 'transparent';
-}
-
-function drawWatermark() {
-  if (!document.getElementById('showWatermark').checked) return;
-  const text = document.getElementById('watermarkText').value.trim();
-  if (!text) return;
-  const fontSize = parseInt(document.getElementById('watermarkSize').value);
-  const color = document.getElementById('watermarkColor').value;
-  const pos = document.getElementById('watermarkPos').value;
-  
-  ctx.font = `bold ${fontSize}px Tahoma, Arial`;
-  ctx.fillStyle = color;
-  ctx.globalAlpha = 0.75;
-  ctx.shadowColor = 'rgba(0,0,0,0.9)';
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 2;
-  
-  const padding = 50;
-  let x, y;
-  if (pos === 'bottom-right') { x = 1080 - padding; y = 1080 - padding; ctx.textAlign = 'right'; }
-  else if (pos === 'bottom-left') { x = padding; y = 1080 - padding; ctx.textAlign = 'left'; }
-  else if (pos === 'top-right') { x = 1080 - padding; y = padding + fontSize; ctx.textAlign = 'right'; }
-  else { x = padding; y = padding + fontSize; ctx.textAlign = 'left'; }
-  
-  ctx.direction = 'rtl';
-  ctx.fillText(text, x, y);
-  ctx.globalAlpha = 1;
-  ctx.shadowColor = 'transparent';
-}
-
-// ====== رفع صورة ======
-document.getElementById('imgInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  selectedTemplate = null;
-  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
-  const reader = new FileReader();
-  reader.onload = (ev) => {
     const img = new Image();
-    img.onload = () => { userImage = img; render(); };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-document.getElementById('showWatermark').addEventListener('change', (e) => {
-  document.getElementById('watermarkOptions').classList.toggle('active', e.target.checked);
-  render();
-});
-
-['adviceText','fontSize','textColor','textAlign','bgStyle','posX','posY','maxWidth',
- 'showDate','dateColor','dateFontSize','watermarkText','watermarkColor','watermarkSize','watermarkPos']
-.forEach(id => {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.addEventListener('input', (e) => {
-    if (id === 'posX') document.getElementById('posXValue').textContent = e.target.value;
-    if (id === 'posY') document.getElementById('posYValue').textContent = e.target.value;
-    if (id === 'maxWidth') document.getElementById('maxWidthValue').textContent = e.target.value;
-    render();
-  });
-  el.addEventListener('change', render);
-});
-
-// ====== السحب ======
-function getCanvasCoords(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: (clientX - rect.left) * (canvas.width / rect.width),
-    y: (clientY - rect.top) * (canvas.height / rect.height)
-  };
-}
-
-function handleDragStart(coords) {
-  const text = document.getElementById('adviceText').value.trim();
-  if (!text) return;
-  const posX = parseInt(document.getElementById('posX').value);
-  const posY = parseInt(document.getElementById('posY').value);
-  const fontSize = parseInt(document.getElementById('fontSize').value);
-  const maxWidth = parseInt(document.getElementById('maxWidth').value);
-  const align = document.getElementById('textAlign').value;
-  ctx.font = `bold ${fontSize}px Tahoma, Arial`;
-  const lines = wrapText(text, maxWidth);
-  const lineHeight = fontSize * 1.4;
-  const totalHeight = lines.length * lineHeight;
-  let maxLineWidth = 0;
-  lines.forEach(l => { const w = ctx.measureText(l).width; if (w > maxLineWidth) maxLineWidth = w; });
-  let boxX;
-  if (align === 'center') boxX = posX - maxLineWidth / 2 - 30;
-  else if (align === 'right') boxX = posX - maxLineWidth - 30;
-  else boxX = posX - 30;
-  const boxY = posY - totalHeight / 2 - 15;
-  const boxW = maxLineWidth + 60;
-  const boxH = totalHeight + 30;
-  if (coords.x >= boxX && coords.x <= boxX + boxW && coords.y >= boxY && coords.y <= boxY + boxH) {
-    isDragging = true;
-    dragStartX = coords.x - posX;
-    dragStartY = coords.y - posY;
-    canvas.style.cursor = 'grabbing';
+    img.onload = () => { S.media = img; S.mtype = 'image'; schedule(); };
+    img.src = url;
   }
-}
+};
 
-function handleDragMove(coords) {
-  if (!isDragging) return;
-  let newX = coords.x - dragStartX;
-  let newY = coords.y - dragStartY;
-  newX = Math.max(0, Math.min(1080, newX));
-  newY = Math.max(0, Math.min(1080, newY));
-  document.getElementById('posX').value = newX;
-  document.getElementById('posY').value = newY;
-  document.getElementById('posXValue').textContent = Math.round(newX);
-  document.getElementById('posYValue').textContent = Math.round(newY);
-  render();
-}
+// ===== ربط عناصر التحكم =====
+function getVal(o, k) { return (o === 'S' ? S : S[o])[k]; }
+document.querySelectorAll('.fonts').forEach(s => {
+  s.innerHTML = FONTS.map(f => `<option value="${f}">${f}</option>`).join('');
+});
+document.querySelectorAll('[data-k]').forEach(el => {
+  const [o, k] = el.dataset.k.split('.');
+  const v = getVal(o, k);
+  if (el.type === 'checkbox') el.checked = v; else el.value = v;
+  const handler = () => {
+    const val = el.type === 'checkbox' ? el.checked
+      : (el.type === 'number' || el.type === 'range') ? (+el.value || 0) : el.value;
+    (o === 'S' ? S : S[o])[k] = val;
+    if (k === 'font') loadFont(val);
+    schedule();
+  };
+  el.addEventListener('input', handler);
+  el.addEventListener('change', handler);
+});
 
-canvas.addEventListener('mousedown', (e) => handleDragStart(getCanvasCoords(e.clientX, e.clientY)));
-canvas.addEventListener('mousemove', (e) => { if (isDragging) handleDragMove(getCanvasCoords(e.clientX, e.clientY)); });
-canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'grab'; render(); });
-canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'grab'; render(); });
+$('reset').onclick = () => {
+  Object.assign(S.text, DEF.text); Object.assign(S.date, DEF.date); Object.assign(S.sig, DEF.sig);
+  schedule();
+};
 
-canvas.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  handleDragStart(getCanvasCoords(e.touches[0].clientX, e.touches[0].clientY));
-}, { passive: false });
-canvas.addEventListener('touchmove', (e) => {
-  e.preventDefault();
-  if (isDragging) handleDragMove(getCanvasCoords(e.touches[0].clientX, e.touches[0].clientY));
-}, { passive: false });
-canvas.addEventListener('touchend', (e) => { e.preventDefault(); isDragging = false; render(); }, { passive: false });
-
-// ====== التحميل والمشاركة ======
-function downloadImage() {
-  isDragging = false;
-  render();
-  const dataURL = canvas.toDataURL('image/png');
-  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    document.getElementById('modalImg').src = dataURL;
-    document.getElementById('modal').classList.add('active');
-  } else {
-    const link = document.createElement('a');
-    link.download = 'advice_' + Date.now() + '.png';
-    link.href = dataURL;
-    link.click();
-  }
-}
-
-async function shareImage() {
-  isDragging = false;
-  render();
-  canvas.toBlob(async (blob) => {
-    const file = new File([blob], 'advice.png', { type: 'image/png' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: 'نصيحة اليوم', text: document.getElementById('adviceText').value.trim() });
-      } catch (err) {}
-    } else {
-      document.getElementById('modalImg').src = canvas.toDataURL('image/png');
-      document.getElementById('modal').classList.add('active');
+// ===== السحب باليد (ماوس + لمس) =====
+const pt = e => {
+  const r = cv.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
+};
+cv.onpointerdown = e => {
+  const p = pt(e);
+  for (const n of ['sig', 'date', 'text']) {
+    const b = B[n];
+    if (b && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
+      S.drag = { n, dx: p.x - S[n].x, dy: p.y - S[n].y };
+      cv.setPointerCapture(e.pointerId);
+      schedule();
+      return;
     }
-  }, 'image/png');
+  }
+};
+cv.onpointermove = e => {
+  if (!S.drag) return;
+  const p = pt(e), el = S[S.drag.n];
+  el.x = Math.min(W, Math.max(0, p.x - S.drag.dx));
+  el.y = Math.min(H, Math.max(0, p.y - S.drag.dy));
+  schedule();
+};
+const endDrag = () => { if (S.drag) { S.drag = null; schedule(); } };
+cv.onpointerup = endDrag;
+cv.onpointercancel = endDrag;
+
+// ===== التصدير =====
+const st = t => { $('status').textContent = t; };
+
+async function save(blob, ext) {
+  const file = new File([blob], `story_${Date.now()}.${ext}`, { type: blob.type || 'application/octet-stream' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file] });
+      return;
+    }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = file.name;
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
-function openInNewTab() {
-  const win = window.open();
-  win.document.write('<img src="' + canvas.toDataURL('image/png') + '" style="max-width:100%">');
+function recordVideo() {
+  const v = S.media;
+  if (!window.MediaRecorder || !cv.captureStream) {
+    st('المتصفح لا يدعم تسجيل الفيديو، تم حفظ الإطار الحالي');
+    draw(); cv.toBlob(b => save(b, 'png'), 'image/png');
+    return;
+  }
+  exporting = true;
+  st('جاري تسجيل الفيديو...');
+  const stream = cv.captureStream(30);
+  try {
+    const a = v.captureStream ? v.captureStream() : null;
+    if (a) a.getAudioTracks().forEach(t => stream.addTrack(t));
+  } catch (e) {}
+  const type = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 'video/webm';
+  const rec = new MediaRecorder(stream, { mimeType: type });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = async () => {
+    v.loop = true; v.onended = null; exporting = false;
+    st('');
+    await save(new Blob(chunks, { type }), type.includes('mp4') ? 'mp4' : 'webm');
+  };
+  v.loop = false; v.currentTime = 0;
+  v.onended = () => { if (rec.state !== 'inactive') rec.stop(); };
+  setTimeout(() => { if (rec.state !== 'inactive') rec.stop(); }, (isFinite(v.duration) ? v.duration : 15) * 1000 + 500);
+  rec.start(200);
+  v.play().catch(() => {});
 }
-function closeModal() { document.getElementById('modal').classList.remove('active'); }
-document.getElementById('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
 
-// ====== التشغيل ======
-buildTemplatesGrid();
-render();
+$('exp').onclick = () => {
+  if (exporting) return;
+  if (S.mtype === 'video') { recordVideo(); return; }
+  draw();
+  cv.toBlob(b => save(b, 'png'), 'image/png');
+};
+
+// ===== التشغيل =====
+Promise.all(FONTS.map(f => document.fonts.load(fontStr(f, 40)))).then(schedule).catch(() => {});
+schedule();
 </script>
 </body>
 </html>
