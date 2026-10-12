@@ -76,7 +76,8 @@
     cursor: pointer;
     transition: 0.2s;
   }
-  .btn-download { background: #FF9800; color: #fff; width: 100%; }
+  .btn-download { background: #FF9800; color: #fff; width: 100%; margin-bottom: 8px; }
+  .btn-share { background: #4CAF50; color: #fff; width: 100%; }
   .btn:hover { transform: translateY(-2px); opacity: 0.9; }
 
   .preview {
@@ -95,9 +96,7 @@
     cursor: grab;
     touch-action: none;
   }
-  canvas:active {
-    cursor: grabbing;
-  }
+  canvas:active { cursor: grabbing; }
   .hint { font-size: 12px; opacity: 0.8; text-align: center; margin-top: 8px; }
   .section-title {
     font-size: 16px;
@@ -114,6 +113,78 @@
     font-size: 13px;
     text-align: center;
     margin-top: 5px;
+  }
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.15);
+    padding: 10px;
+    border-radius: 10px;
+  }
+  .checkbox-group input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+  }
+  .checkbox-group label {
+    margin: 0;
+    cursor: pointer;
+    flex: 1;
+  }
+  .watermark-options {
+    background: rgba(255,255,255,0.1);
+    padding: 12px;
+    border-radius: 10px;
+    display: none;
+  }
+  .watermark-options.active { display: block; }
+
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    color: #333;
+  }
+  .modal-content img {
+    max-width: 100%;
+    border-radius: 10px;
+    margin: 15px 0;
+  }
+  .modal-content .btn {
+    margin: 5px;
+    width: auto;
+    display: inline-block;
+    padding: 10px 20px;
+  }
+  .modal-close {
+    background: #f44336;
+    color: #fff;
+  }
+  .modal-instruction {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin: 10px 0;
+    color: #856404;
   }
 </style>
 </head>
@@ -160,8 +231,57 @@
         </div>
       </div>
 
+      <div class="section-title">📅 التاريخ (أسفل الصورة)</div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="showDate" checked>
+        <label for="showDate">إظهار التاريخ الميلادي والهجري</label>
+      </div>
+      <div class="row">
+        <div>
+          <label>لون التاريخ:</label>
+          <input type="color" id="dateColor" value="#ffffff">
+        </div>
+        <div>
+          <label>حجم خط التاريخ:</label>
+          <input type="number" id="dateFontSize" value="28" min="14" max="50">
+        </div>
+      </div>
+
+      <div class="section-title">💧 العلامة المائية</div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="showWatermark">
+        <label for="showWatermark">إضافة علامة مائية</label>
+      </div>
+      <div class="watermark-options" id="watermarkOptions">
+        <div class="row">
+          <div>
+            <label>نص العلامة المائية:</label>
+            <input type="text" id="watermarkText" placeholder="مثال: @qarna68" value="@qarna68">
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>لون العلامة:</label>
+            <input type="color" id="watermarkColor" value="#ffffff">
+          </div>
+          <div>
+            <label>حجم الخط:</label>
+            <input type="number" id="watermarkSize" value="24" min="12" max="50">
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <label>موضع العلامة:</label>
+          <select id="watermarkPos">
+            <option value="bottom-right">أسفل يمين</option>
+            <option value="bottom-left">أسفل يسار</option>
+            <option value="top-right">أعلى يمين</option>
+            <option value="top-left">أعلى يسار</option>
+          </select>
+        </div>
+      </div>
+
       <div class="section-title">📍 تحريك النص</div>
-      <div class="drag-hint"> اسحب النص مباشرة على الصورة لتحريكه</div>
+      <div class="drag-hint">👆 اسحب النص مباشرة على الصورة لتحريكه</div>
       
       <div class="slider-group">
         <label>
@@ -174,9 +294,9 @@
       <div class="slider-group">
         <label>
           <span>الموضع العمودي (Y)</span>
-          <span id="posYValue">540</span>
+          <span id="posYValue">450</span>
         </label>
-        <input type="range" id="posY" min="0" max="1080" value="540">
+        <input type="range" id="posY" min="0" max="1080" value="450">
       </div>
 
       <div class="slider-group">
@@ -188,14 +308,29 @@
       </div>
 
       <button class="btn btn-download" onclick="downloadImage()">⬇️ تحميل الصورة</button>
-      <p class="hint">💡 انشر الصورة على إنستغرام وتويتر مباشرة</p>
+      <button class="btn btn-share" onclick="shareImage()">📤 مشاركة / حفظ في الاستوديو</button>
+      <p class="hint">💡 زر "مشاركة" يحفظ مباشرة في استوديو الآيفون</p>
     </div>
 
     <!-- المعاينة -->
     <div class="preview">
       <canvas id="canvas" width="1080" height="1080"></canvas>
-      <p class="hint">معاينة مباشرة (1080×1080 - مقاس إنستغرام المثالي)</p>
+      <p class="hint">معاينة مباشرة (1080×1080)</p>
     </div>
+  </div>
+</div>
+
+<!-- Modal للتحميل -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3> حفظ الصورة على الآيفون</h3>
+    <img id="modalImg" src="" alt="preview">
+    <div class="modal-instruction">
+      <strong>طريقة الحفظ:</strong><br>
+      اضغط مطولاً على الصورة → اختر "حفظ في الصور"
+    </div>
+    <button class="btn" onclick="openInNewTab()"> فتح في نافذة جديدة</button>
+    <button class="btn modal-close" onclick="closeModal()">إغلاق</button>
   </div>
 </div>
 
@@ -207,7 +342,30 @@ let isDragging = false;
 let dragStartX = 0;
 let dragStartY = 0;
 
-// رسم الخلفية الافتراضية
+// ====== حساب التاريخ ======
+function getDates() {
+  const now = new Date();
+  
+  // التاريخ الميلادي بالعربية
+  const gregorian = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(now);
+  
+  // التاريخ الهجري
+  const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(now);
+  
+  return { gregorian: gregorian + ' م', hijri: hijri + 'هـ' };
+}
+
+// ====== رسم الخلفية الافتراضية ======
 function drawDefault() {
   const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
   grad.addColorStop(0, '#667eea');
@@ -221,7 +379,7 @@ function drawDefault() {
 }
 drawDefault();
 
-// عند رفع صورة
+// ====== عند رفع صورة ======
 document.getElementById('imgInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -237,18 +395,28 @@ document.getElementById('imgInput').addEventListener('change', (e) => {
   reader.readAsDataURL(file);
 });
 
-// تحديث فوري عند تغيير أي حقل
-['adviceText', 'fontSize', 'textColor', 'textAlign', 'bgStyle', 'posX', 'posY', 'maxWidth'].forEach(id => {
+// ====== إظهار/إخفاء خيارات العلامة المائية ======
+document.getElementById('showWatermark').addEventListener('change', (e) => {
+  document.getElementById('watermarkOptions').classList.toggle('active', e.target.checked);
+  render();
+});
+
+// ====== تحديث فوري ======
+['adviceText', 'fontSize', 'textColor', 'textAlign', 'bgStyle', 'posX', 'posY', 'maxWidth',
+ 'showDate', 'dateColor', 'dateFontSize', 'watermarkText', 'watermarkColor', 'watermarkSize', 'watermarkPos']
+.forEach(id => {
   const el = document.getElementById(id);
+  if (!el) return;
   el.addEventListener('input', (e) => {
     if (id === 'posX') document.getElementById('posXValue').textContent = e.target.value;
     if (id === 'posY') document.getElementById('posYValue').textContent = e.target.value;
     if (id === 'maxWidth') document.getElementById('maxWidthValue').textContent = e.target.value;
     render();
   });
+  el.addEventListener('change', render);
 });
 
-// رسم النص مع التفاف الأسطر (wrap) للعربية
+// ====== رسم النص مع التفاف الأسطر ======
 function wrapText(text, maxWidth) {
   const words = text.split(' ');
   const lines = [];
@@ -266,11 +434,90 @@ function wrapText(text, maxWidth) {
   return lines;
 }
 
-// الرسم الرئيسي
+// ====== رسم شريط سفلي للتاريخ ======
+function drawDateBar() {
+  if (!document.getElementById('showDate').checked) return;
+  
+  const dates = getDates();
+  const fontSize = parseInt(document.getElementById('dateFontSize').value);
+  const color = document.getElementById('dateColor').value;
+  
+  // شريط خلفية نصف شفاف
+  const barHeight = fontSize * 3.5;
+  const gradient = ctx.createLinearGradient(0, 1080 - barHeight, 0, 1080);
+  gradient.addColorStop(0, 'rgba(0,0,0,0)');
+  gradient.addColorStop(0.3, 'rgba(0,0,0,0.6)');
+  gradient.addColorStop(1, 'rgba(0,0,0,0.85)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 1080 - barHeight, 1080, barHeight);
+  
+  // خط فاصل
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(100, 1080 - barHeight + 20);
+  ctx.lineTo(980, 1080 - barHeight + 20);
+  ctx.stroke();
+  
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.direction = 'rtl';
+  ctx.font = `bold ${fontSize}px Tahoma, Arial`;
+  
+  const y1 = 1080 - barHeight + 60;
+  const y2 = 1080 - barHeight + 60 + fontSize * 1.5;
+  
+  ctx.fillText(dates.gregorian, 540, y1);
+  ctx.font = `${fontSize - 4}px Tahoma, Arial`;
+  ctx.fillText(dates.hijri, 540, y2);
+}
+
+// ====== رسم العلامة المائية ======
+function drawWatermark() {
+  if (!document.getElementById('showWatermark').checked) return;
+  
+  const text = document.getElementById('watermarkText').value.trim();
+  if (!text) return;
+  
+  const fontSize = parseInt(document.getElementById('watermarkSize').value);
+  const color = document.getElementById('watermarkColor').value;
+  const pos = document.getElementById('watermarkPos').value;
+  
+  ctx.font = `bold ${fontSize}px Tahoma, Arial`;
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.7;
+  ctx.textAlign = 'center';
+  ctx.direction = 'rtl';
+  
+  const padding = 40;
+  let x, y;
+  
+  switch(pos) {
+    case 'bottom-right': x = 1080 - padding; y = 1080 - padding; break;
+    case 'bottom-left': x = padding; y = 1080 - padding; break;
+    case 'top-right': x = 1080 - padding; y = padding + fontSize; break;
+    case 'top-left': x = padding; y = padding + fontSize; break;
+  }
+  
+  // محاذاة حسب الموضع
+  if (pos.includes('right')) ctx.textAlign = 'right';
+  else if (pos.includes('left')) ctx.textAlign = 'left';
+  else ctx.textAlign = 'center';
+  
+  // ظل للعلامة المائية
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.fillText(text, x, y);
+  ctx.shadowColor = 'transparent';
+  ctx.globalAlpha = 1;
+}
+
+// ====== الرسم الرئيسي ======
 function render() {
   ctx.clearRect(0, 0, 1080, 1080);
 
-  // رسم الصورة مع الحفاظ على النسبة (cover)
   if (userImage) {
     const r = Math.max(1080 / userImage.width, 1080 / userImage.height);
     const w = userImage.width * r;
@@ -281,7 +528,11 @@ function render() {
   }
 
   const text = document.getElementById('adviceText').value.trim();
-  if (!text || !userImage) return;
+  if (!text || !userImage) {
+    drawDateBar();
+    drawWatermark();
+    return;
+  }
 
   const fontSize = parseInt(document.getElementById('fontSize').value);
   const color = document.getElementById('textColor').value;
@@ -299,7 +550,6 @@ function render() {
   const lineHeight = fontSize * 1.4;
   const totalHeight = lines.length * lineHeight;
 
-  // حساب حدود المربع
   const padding = 30;
   let maxLineWidth = 0;
   lines.forEach(l => {
@@ -308,24 +558,18 @@ function render() {
   });
 
   let boxX, boxY, boxW, boxH;
-  if (align === 'center') {
-    boxX = posX - maxLineWidth / 2 - padding;
-  } else if (align === 'right') {
-    boxX = posX - maxLineWidth - padding;
-  } else {
-    boxX = posX - padding;
-  }
+  if (align === 'center') boxX = posX - maxLineWidth / 2 - padding;
+  else if (align === 'right') boxX = posX - maxLineWidth - padding;
+  else boxX = posX - padding;
   boxY = posY - totalHeight / 2 - padding / 2;
   boxW = maxLineWidth + padding * 2;
   boxH = totalHeight + padding;
 
-  // رسم الخلفية
   if (bg === 'box') {
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillRect(boxX, boxY, boxW, boxH);
   }
 
-  // رسم النص
   ctx.fillStyle = color;
   if (bg === 'shadow') {
     ctx.shadowColor = 'rgba(0,0,0,0.9)';
@@ -340,7 +584,6 @@ function render() {
   });
   ctx.shadowColor = 'transparent';
 
-  // رسم إطار حول النص عند السحب
   if (isDragging) {
     ctx.strokeStyle = 'rgba(255,255,0,0.8)';
     ctx.lineWidth = 3;
@@ -348,9 +591,13 @@ function render() {
     ctx.strokeRect(boxX, boxY, boxW, boxH);
     ctx.setLineDash([]);
   }
+
+  // رسم التاريخ والعلامة المائية في النهاية (فوق كل شيء)
+  drawDateBar();
+  drawWatermark();
 }
 
-// تحويل إحداثيات الشاشة إلى إحداثيات الـ canvas
+// ====== تحويل الإحداثيات ======
 function getCanvasCoords(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
@@ -361,7 +608,7 @@ function getCanvasCoords(clientX, clientY) {
   };
 }
 
-// أحداث الماوس
+// ====== أحداث الماوس ======
 canvas.addEventListener('mousedown', (e) => {
   const coords = getCanvasCoords(e.clientX, e.clientY);
   const text = document.getElementById('adviceText').value.trim();
@@ -384,19 +631,14 @@ canvas.addEventListener('mousedown', (e) => {
     if (w > maxLineWidth) maxLineWidth = w;
   });
   
-  let boxX, boxY, boxW, boxH;
-  if (align === 'center') {
-    boxX = posX - maxLineWidth / 2 - 30;
-  } else if (align === 'right') {
-    boxX = posX - maxLineWidth - 30;
-  } else {
-    boxX = posX - 30;
-  }
-  boxY = posY - totalHeight / 2 - 15;
-  boxW = maxLineWidth + 60;
-  boxH = totalHeight + 30;
+  let boxX;
+  if (align === 'center') boxX = posX - maxLineWidth / 2 - 30;
+  else if (align === 'right') boxX = posX - maxLineWidth - 30;
+  else boxX = posX - 30;
+  const boxY = posY - totalHeight / 2 - 15;
+  const boxW = maxLineWidth + 60;
+  const boxH = totalHeight + 30;
   
-  // التحقق من النقر داخل منطقة النص
   if (coords.x >= boxX && coords.x <= boxX + boxW && 
       coords.y >= boxY && coords.y <= boxY + boxH) {
     isDragging = true;
@@ -411,11 +653,8 @@ canvas.addEventListener('mousemove', (e) => {
   const coords = getCanvasCoords(e.clientX, e.clientY);
   let newX = coords.x - dragStartX;
   let newY = coords.y - dragStartY;
-  
-  // تحديد الحدود
   newX = Math.max(0, Math.min(1080, newX));
   newY = Math.max(0, Math.min(1080, newY));
-  
   document.getElementById('posX').value = newX;
   document.getElementById('posY').value = newY;
   document.getElementById('posXValue').textContent = Math.round(newX);
@@ -423,19 +662,10 @@ canvas.addEventListener('mousemove', (e) => {
   render();
 });
 
-canvas.addEventListener('mouseup', () => {
-  isDragging = false;
-  canvas.style.cursor = 'grab';
-  render();
-});
+canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'grab'; render(); });
+canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'grab'; render(); });
 
-canvas.addEventListener('mouseleave', () => {
-  isDragging = false;
-  canvas.style.cursor = 'grab';
-  render();
-});
-
-// أحداث اللمس (للآيفون)
+// ====== أحداث اللمس (الآيفون) ======
 canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
   const touch = e.touches[0];
@@ -460,17 +690,13 @@ canvas.addEventListener('touchstart', (e) => {
     if (w > maxLineWidth) maxLineWidth = w;
   });
   
-  let boxX, boxY, boxW, boxH;
-  if (align === 'center') {
-    boxX = posX - maxLineWidth / 2 - 30;
-  } else if (align === 'right') {
-    boxX = posX - maxLineWidth - 30;
-  } else {
-    boxX = posX - 30;
-  }
-  boxY = posY - totalHeight / 2 - 15;
-  boxW = maxLineWidth + 60;
-  boxH = totalHeight + 30;
+  let boxX;
+  if (align === 'center') boxX = posX - maxLineWidth / 2 - 30;
+  else if (align === 'right') boxX = posX - maxLineWidth - 30;
+  else boxX = posX - 30;
+  const boxY = posY - totalHeight / 2 - 15;
+  const boxW = maxLineWidth + 60;
+  const boxH = totalHeight + 30;
   
   if (coords.x >= boxX && coords.x <= boxX + boxW && 
       coords.y >= boxY && coords.y <= boxY + boxH) {
@@ -487,10 +713,8 @@ canvas.addEventListener('touchmove', (e) => {
   const coords = getCanvasCoords(touch.clientX, touch.clientY);
   let newX = coords.x - dragStartX;
   let newY = coords.y - dragStartY;
-  
   newX = Math.max(0, Math.min(1080, newX));
   newY = Math.max(0, Math.min(1080, newY));
-  
   document.getElementById('posX').value = newX;
   document.getElementById('posY').value = newY;
   document.getElementById('posXValue').textContent = Math.round(newX);
@@ -498,19 +722,71 @@ canvas.addEventListener('touchmove', (e) => {
   render();
 }, { passive: false });
 
-canvas.addEventListener('touchend', (e) => {
-  e.preventDefault();
+canvas.addEventListener('touchend', (e) => { e.preventDefault(); isDragging = false; render(); }, { passive: false });
+
+// ====== التحميل (مع Modal للآيفون) ======
+function downloadImage() {
+  // إعادة الرسم بدون إطار السحب
   isDragging = false;
   render();
-}, { passive: false });
-
-// تحميل الصورة
-function downloadImage() {
-  const link = document.createElement('a');
-  link.download = 'advice_' + Date.now() + '.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+  
+  const dataURL = canvas.toDataURL('image/png');
+  
+  // للآيفون: اعرض في Modal
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    document.getElementById('modalImg').src = dataURL;
+    document.getElementById('modal').classList.add('active');
+  } else {
+    // للكمبيوتر: تحميل مباشر
+    const link = document.createElement('a');
+    link.download = 'advice_' + Date.now() + '.png';
+    link.href = dataURL;
+    link.click();
+  }
 }
+
+function openInNewTab() {
+  const dataURL = canvas.toDataURL('image/png');
+  const win = window.open();
+  win.document.write('<img src="' + dataURL + '" style="max-width:100%">');
+  win.document.title = 'نصيحة اليوم';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+// ====== المشاركة المباشرة (يحفظ في الاستوديو) ======
+async function shareImage() {
+  isDragging = false;
+  render();
+  
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'advice.png', { type: 'image/png' });
+    
+    // Web Share API - يعمل على الآيفون ويحفظ مباشرة في الاستوديو
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'نصيحة اليوم',
+          text: document.getElementById('adviceText').value.trim()
+        });
+      } catch (err) {
+        console.log('مشاركة ملغاة');
+      }
+    } else {
+      // Fallback: عرض في Modal
+      document.getElementById('modalImg').src = canvas.toDataURL('image/png');
+      document.getElementById('modal').classList.add('active');
+    }
+  }, 'image/png');
+}
+
+// إغلاق Modal عند النقر خارج المحتوى
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
 </script>
 </body>
 </html>
