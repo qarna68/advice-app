@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>مولد نصائح السوشيال ميديا</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tahoma', sans-serif; }
@@ -25,7 +26,7 @@
   @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
 
   .controls { display: flex; flex-direction: column; gap: 12px; }
-  .controls label { font-size: 14px; font-weight: bold; }
+  .controls label { font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px; }
   .controls input, .controls textarea, .controls select {
     padding: 10px;
     border: none;
@@ -33,10 +34,39 @@
     background: rgba(255,255,255,0.9);
     color: #333;
     font-size: 15px;
+    width: 100%;
   }
   .controls textarea { min-height: 90px; resize: vertical; }
   .row { display: flex; gap: 10px; }
   .row > * { flex: 1; }
+  .slider-group {
+    background: rgba(255,255,255,0.15);
+    padding: 12px;
+    border-radius: 10px;
+  }
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .slider-group input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.3);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+  }
   .btn {
     padding: 12px;
     border: none;
@@ -46,8 +76,7 @@
     cursor: pointer;
     transition: 0.2s;
   }
-  .btn-upload { background: #4CAF50; color: #fff; }
-  .btn-download { background: #FF9800; color: #fff; }
+  .btn-download { background: #FF9800; color: #fff; width: 100%; }
   .btn:hover { transform: translateY(-2px); opacity: 0.9; }
 
   .preview {
@@ -63,8 +92,29 @@
     max-width: 100%;
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    cursor: grab;
+    touch-action: none;
+  }
+  canvas:active {
+    cursor: grabbing;
   }
   .hint { font-size: 12px; opacity: 0.8; text-align: center; margin-top: 8px; }
+  .section-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid rgba(255,255,255,0.3);
+  }
+  .drag-hint {
+    background: rgba(255,255,0,0.2);
+    border: 1px solid rgba(255,255,0,0.5);
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 5px;
+  }
 </style>
 </head>
 <body>
@@ -79,6 +129,7 @@
       <label>2) اكتب النصيحة:</label>
       <textarea id="adviceText" placeholder="اكتب نصيحتك هنا..."></textarea>
 
+      <div class="section-title">🎨 إعدادات النص</div>
       <div class="row">
         <div>
           <label>حجم الخط:</label>
@@ -92,11 +143,11 @@
 
       <div class="row">
         <div>
-          <label>موضع النص:</label>
-          <select id="position">
-            <option value="top">أعلى</option>
+          <label>محاذاة النص:</label>
+          <select id="textAlign">
+            <option value="right">يمين</option>
             <option value="center" selected>وسط</option>
-            <option value="bottom">أسفل</option>
+            <option value="left">يسار</option>
           </select>
         </div>
         <div>
@@ -107,6 +158,33 @@
             <option value="none">بدون</option>
           </select>
         </div>
+      </div>
+
+      <div class="section-title">📍 تحريك النص</div>
+      <div class="drag-hint"> اسحب النص مباشرة على الصورة لتحريكه</div>
+      
+      <div class="slider-group">
+        <label>
+          <span>الموضع الأفقي (X)</span>
+          <span id="posXValue">540</span>
+        </label>
+        <input type="range" id="posX" min="0" max="1080" value="540">
+      </div>
+
+      <div class="slider-group">
+        <label>
+          <span>الموضع العمودي (Y)</span>
+          <span id="posYValue">540</span>
+        </label>
+        <input type="range" id="posY" min="0" max="1080" value="540">
+      </div>
+
+      <div class="slider-group">
+        <label>
+          <span>عرض النص (Max Width)</span>
+          <span id="maxWidthValue">900</span>
+        </label>
+        <input type="range" id="maxWidth" min="200" max="1000" value="900">
       </div>
 
       <button class="btn btn-download" onclick="downloadImage()">⬇️ تحميل الصورة</button>
@@ -125,6 +203,9 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let userImage = null;
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
 
 // رسم الخلفية الافتراضية
 function drawDefault() {
@@ -157,8 +238,14 @@ document.getElementById('imgInput').addEventListener('change', (e) => {
 });
 
 // تحديث فوري عند تغيير أي حقل
-['adviceText', 'fontSize', 'textColor', 'position', 'bgStyle'].forEach(id => {
-  document.getElementById(id).addEventListener('input', render);
+['adviceText', 'fontSize', 'textColor', 'textAlign', 'bgStyle', 'posX', 'posY', 'maxWidth'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', (e) => {
+    if (id === 'posX') document.getElementById('posXValue').textContent = e.target.value;
+    if (id === 'posY') document.getElementById('posYValue').textContent = e.target.value;
+    if (id === 'maxWidth') document.getElementById('maxWidthValue').textContent = e.target.value;
+    render();
+  });
 });
 
 // رسم النص مع التفاف الأسطر (wrap) للعربية
@@ -198,22 +285,19 @@ function render() {
 
   const fontSize = parseInt(document.getElementById('fontSize').value);
   const color = document.getElementById('textColor').value;
-  const pos = document.getElementById('position').value;
+  const align = document.getElementById('textAlign').value;
   const bg = document.getElementById('bgStyle').value;
+  const posX = parseInt(document.getElementById('posX').value);
+  const posY = parseInt(document.getElementById('posY').value);
+  const maxWidth = parseInt(document.getElementById('maxWidth').value);
 
   ctx.font = `bold ${fontSize}px Tahoma, Arial`;
-  ctx.textAlign = 'center';
+  ctx.textAlign = align;
   ctx.direction = 'rtl';
 
-  const lines = wrapText(text, 900);
+  const lines = wrapText(text, maxWidth);
   const lineHeight = fontSize * 1.4;
   const totalHeight = lines.length * lineHeight;
-
-  // تحديد Y حسب الموضع
-  let startY;
-  if (pos === 'top') startY = 150;
-  else if (pos === 'bottom') startY = 1080 - 150 - totalHeight + lineHeight;
-  else startY = (1080 - totalHeight) / 2 + lineHeight;
 
   // حساب حدود المربع
   const padding = 30;
@@ -222,10 +306,18 @@ function render() {
     const w = ctx.measureText(l).width;
     if (w > maxLineWidth) maxLineWidth = w;
   });
-  const boxX = (1080 - maxLineWidth) / 2 - padding;
-  const boxY = startY - lineHeight + 10 - padding / 2;
-  const boxW = maxLineWidth + padding * 2;
-  const boxH = totalHeight + padding;
+
+  let boxX, boxY, boxW, boxH;
+  if (align === 'center') {
+    boxX = posX - maxLineWidth / 2 - padding;
+  } else if (align === 'right') {
+    boxX = posX - maxLineWidth - padding;
+  } else {
+    boxX = posX - padding;
+  }
+  boxY = posY - totalHeight / 2 - padding / 2;
+  boxW = maxLineWidth + padding * 2;
+  boxH = totalHeight + padding;
 
   // رسم الخلفية
   if (bg === 'box') {
@@ -241,11 +333,176 @@ function render() {
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
   }
+
+  const startY = posY - totalHeight / 2 + lineHeight;
   lines.forEach((line, i) => {
-    ctx.fillText(line, 540, startY + i * lineHeight);
+    ctx.fillText(line, posX, startY + i * lineHeight);
   });
   ctx.shadowColor = 'transparent';
+
+  // رسم إطار حول النص عند السحب
+  if (isDragging) {
+    ctx.strokeStyle = 'rgba(255,255,0,0.8)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([10, 5]);
+    ctx.strokeRect(boxX, boxY, boxW, boxH);
+    ctx.setLineDash([]);
+  }
 }
+
+// تحويل إحداثيات الشاشة إلى إحداثيات الـ canvas
+function getCanvasCoords(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+// أحداث الماوس
+canvas.addEventListener('mousedown', (e) => {
+  const coords = getCanvasCoords(e.clientX, e.clientY);
+  const text = document.getElementById('adviceText').value.trim();
+  if (!text || !userImage) return;
+  
+  const posX = parseInt(document.getElementById('posX').value);
+  const posY = parseInt(document.getElementById('posY').value);
+  const fontSize = parseInt(document.getElementById('fontSize').value);
+  const maxWidth = parseInt(document.getElementById('maxWidth').value);
+  const align = document.getElementById('textAlign').value;
+  
+  ctx.font = `bold ${fontSize}px Tahoma, Arial`;
+  const lines = wrapText(text, maxWidth);
+  const lineHeight = fontSize * 1.4;
+  const totalHeight = lines.length * lineHeight;
+  
+  let maxLineWidth = 0;
+  lines.forEach(l => {
+    const w = ctx.measureText(l).width;
+    if (w > maxLineWidth) maxLineWidth = w;
+  });
+  
+  let boxX, boxY, boxW, boxH;
+  if (align === 'center') {
+    boxX = posX - maxLineWidth / 2 - 30;
+  } else if (align === 'right') {
+    boxX = posX - maxLineWidth - 30;
+  } else {
+    boxX = posX - 30;
+  }
+  boxY = posY - totalHeight / 2 - 15;
+  boxW = maxLineWidth + 60;
+  boxH = totalHeight + 30;
+  
+  // التحقق من النقر داخل منطقة النص
+  if (coords.x >= boxX && coords.x <= boxX + boxW && 
+      coords.y >= boxY && coords.y <= boxY + boxH) {
+    isDragging = true;
+    dragStartX = coords.x - posX;
+    dragStartY = coords.y - posY;
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const coords = getCanvasCoords(e.clientX, e.clientY);
+  let newX = coords.x - dragStartX;
+  let newY = coords.y - dragStartY;
+  
+  // تحديد الحدود
+  newX = Math.max(0, Math.min(1080, newX));
+  newY = Math.max(0, Math.min(1080, newY));
+  
+  document.getElementById('posX').value = newX;
+  document.getElementById('posY').value = newY;
+  document.getElementById('posXValue').textContent = Math.round(newX);
+  document.getElementById('posYValue').textContent = Math.round(newY);
+  render();
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDragging = false;
+  canvas.style.cursor = 'grab';
+  render();
+});
+
+canvas.addEventListener('mouseleave', () => {
+  isDragging = false;
+  canvas.style.cursor = 'grab';
+  render();
+});
+
+// أحداث اللمس (للآيفون)
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const coords = getCanvasCoords(touch.clientX, touch.clientY);
+  const text = document.getElementById('adviceText').value.trim();
+  if (!text || !userImage) return;
+  
+  const posX = parseInt(document.getElementById('posX').value);
+  const posY = parseInt(document.getElementById('posY').value);
+  const fontSize = parseInt(document.getElementById('fontSize').value);
+  const maxWidth = parseInt(document.getElementById('maxWidth').value);
+  const align = document.getElementById('textAlign').value;
+  
+  ctx.font = `bold ${fontSize}px Tahoma, Arial`;
+  const lines = wrapText(text, maxWidth);
+  const lineHeight = fontSize * 1.4;
+  const totalHeight = lines.length * lineHeight;
+  
+  let maxLineWidth = 0;
+  lines.forEach(l => {
+    const w = ctx.measureText(l).width;
+    if (w > maxLineWidth) maxLineWidth = w;
+  });
+  
+  let boxX, boxY, boxW, boxH;
+  if (align === 'center') {
+    boxX = posX - maxLineWidth / 2 - 30;
+  } else if (align === 'right') {
+    boxX = posX - maxLineWidth - 30;
+  } else {
+    boxX = posX - 30;
+  }
+  boxY = posY - totalHeight / 2 - 15;
+  boxW = maxLineWidth + 60;
+  boxH = totalHeight + 30;
+  
+  if (coords.x >= boxX && coords.x <= boxX + boxW && 
+      coords.y >= boxY && coords.y <= boxY + boxH) {
+    isDragging = true;
+    dragStartX = coords.x - posX;
+    dragStartY = coords.y - posY;
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (!isDragging) return;
+  const touch = e.touches[0];
+  const coords = getCanvasCoords(touch.clientX, touch.clientY);
+  let newX = coords.x - dragStartX;
+  let newY = coords.y - dragStartY;
+  
+  newX = Math.max(0, Math.min(1080, newX));
+  newY = Math.max(0, Math.min(1080, newY));
+  
+  document.getElementById('posX').value = newX;
+  document.getElementById('posY').value = newY;
+  document.getElementById('posXValue').textContent = Math.round(newX);
+  document.getElementById('posYValue').textContent = Math.round(newY);
+  render();
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  isDragging = false;
+  render();
+}, { passive: false });
 
 // تحميل الصورة
 function downloadImage() {
